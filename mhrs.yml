@@ -1,0 +1,38 @@
+name: MHRS Otomatik Randevu
+
+on:
+  schedule:
+    # Her 5 dakikada bir çalışır
+    - cron: "*/5 * * * *"
+  # İstersen panelden elle de çalıştırabilirsin
+  workflow_dispatch: {}
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Kodu checkout et
+        uses: actions/checkout@v4
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Gerekli paketleri yükle
+        run: |
+          pip install -r requirements.txt
+
+      - name: Botu çalıştır
+        env:
+          MHRS_TC_KIMLIK: ${{ secrets.MHRS_TC_KIMLIK }}
+          MHRS_PASSWORD: ${{ secrets.MHRS_PASSWORD }}
+          MHRS_PHONE: ${{ secrets.MHRS_PHONE }}
+          MHRS_HASTANE_ID: ${{ secrets.MHRS_HASTANE_ID }}
+          MHRS_KLINIK_ID: ${{ secrets.MHRS_KLINIK_ID }}
+          MHRS_DOKTOR_ID: ${{ secrets.MHRS_DOKTOR_ID }}
+          MHRS_DATE_FROM: ${{ secrets.MHRS_DATE_FROM }}
+          MHRS_DATE_TO: ${{ secrets.MHRS_DATE_TO }}
+        run: |
+          python -c "from mhrs_client import check_and_book_appointment; check_and_book_appointment()"
